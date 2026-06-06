@@ -1,0 +1,430 @@
+//DATA//
+  profile: DB.FindOne(refid, { collection: 'profile' })
+  scores: DB.Find(refid, { collection: 'score_aggregate' })
+
+- const profileData = profile || {};
+- const scoreData = Array.isArray(scores) ? scores : [];
+
+style.
+  .polaris-overview {
+    color: #243044;
+  }
+  .polaris-profile-hero {
+    align-items: stretch;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(18rem, 1.35fr) minmax(16rem, 0.85fr);
+    margin-bottom: 1rem;
+  }
+  .polaris-panel {
+    background: #f8fafc;
+    padding: 1rem;
+  }
+  .polaris-player-name {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+  }
+  .polaris-muted {
+    color: #6b778c;
+  }
+  .polaris-grade-band {
+    align-items: center;
+    display: flex;
+    gap: 0.85rem;
+  }
+  .polaris-grade-main {
+    flex: 1;
+    min-width: 12rem;
+  }
+  .polaris-grade-mark {
+    align-items: center;
+    color: #1e2635;
+    display: flex;
+    font-size: 1.1rem;
+    font-weight: 800;
+    justify-content: center;
+    min-height: 3.5rem;
+    min-width: 7.5rem;
+  }
+  .polaris-grade-mark.is-next {
+    justify-content: flex-end;
+  }
+  .polaris-grade-mark[hidden] {
+    display: none;
+  }
+  .polaris-grade-mark img {
+    display: block;
+    max-height: 4rem;
+    max-width: 7rem;
+    object-fit: contain;
+  }
+  .polaris-skill-value {
+    font-size: 2rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .polaris-grade-progress {
+    background: #d9e0ea;
+    height: 1.45rem;
+    margin-top: 0.6rem;
+    overflow: hidden;
+    position: relative;
+  }
+  .polaris-grade-progress span {
+    display: block;
+    height: 100%;
+  }
+  .polaris-grade-progress-label {
+    align-items: center;
+    bottom: 0;
+    color: #1e2635;
+    display: flex;
+    font-size: 0.78rem;
+    font-weight: 800;
+    justify-content: center;
+    left: 0;
+    padding: 0 0.45rem;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    text-align: center;
+    top: 0;
+  }
+  .polaris-summary-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    margin-bottom: 1rem;
+  }
+  .polaris-stat {
+    background: #ffffff;
+    padding: 0.85rem;
+  }
+  .polaris-stat .heading {
+    color: #68758a;
+    letter-spacing: 0;
+    margin-bottom: 0.25rem;
+  }
+  .polaris-stat .value {
+    font-size: 1.25rem;
+    font-weight: 800;
+  }
+  .polaris-profile-table th {
+    color: #68758a;
+    width: 14rem;
+  }
+  .polaris-last-track {
+    align-items: center;
+    display: flex;
+    gap: 0.65rem;
+  }
+  .polaris-last-jacket {
+    aspect-ratio: 1;
+    background: #e8edf3;
+    flex: 0 0 auto;
+    height: 3.2rem;
+    object-fit: cover;
+    width: 3.2rem;
+  }
+  .polaris-deck-list {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  }
+  .polaris-deck {
+    background: #ffffff;
+    padding: 0.85rem;
+  }
+  .polaris-deck.is-selected {
+    background: #eef7f4;
+  }
+  @media (max-width: 860px) {
+    .polaris-profile-hero {
+      grid-template-columns: 1fr;
+    }
+  }
+
+.polaris-overview
+  .card
+    .card-header
+      p.card-header-title
+        span.icon
+          i.mdi.mdi-account-circle
+        | PROFILE
+    .card-content
+      .polaris-profile-hero
+        .polaris-panel
+          .polaris-player-name#polaris-player-name -
+          .polaris-muted RefID #{refid}
+          .tags.mt-3
+            span.tag.is-light#polaris-usr-id usr_id -
+            span.tag.is-light#polaris-crew-id crew_id -
+            span.tag.is-light#polaris-rank rank -
+        .polaris-panel
+          .polaris-grade-band
+            .polaris-grade-mark#polaris-grade-mark -
+            .polaris-grade-main
+              .polaris-muted Pa Skill
+              .polaris-skill-value#polaris-skill-value 0.00
+              .polaris-grade-progress
+                span#polaris-grade-progress
+                .polaris-grade-progress-label#polaris-grade-progress-label -
+
+      .polaris-summary-grid
+        .polaris-stat
+          p.heading 플레이 수
+          p.value#polaris-play-count -
+        .polaris-stat
+          p.heading 기록된 곡
+          p.value#polaris-song-count -
+        .polaris-stat
+          p.heading 기록된 보면
+          p.value#polaris-chart-count -
+        .polaris-stat
+          p.heading Success 이상
+          p.value#polaris-success-count -
+        .polaris-stat
+          p.heading Full Combo
+          p.value#polaris-fc-count -
+        .polaris-stat
+          p.heading Mira
+          p.value#polaris-mira-count -
+
+      .columns
+        .column
+          h4.title.is-6 플레이 상태
+          table.table.is-fullwidth.is-striped.polaris-profile-table
+            tbody
+              tr
+                th 마지막 곡
+                td#polaris-last-music -
+              tr
+                th 선택 난이도
+                td#polaris-last-difficulty -
+              tr
+                th 튜토리얼
+                td#polaris-tutorial -
+              tr
+                th Pa Skill 공개
+                td#polaris-skill-privacy -
+              tr
+                th Pa Skill 랭킹 허용
+                td#polaris-ranking-privacy -
+        .column
+          h4.title.is-6 보유/진행
+          table.table.is-fullwidth.is-striped.polaris-profile-table
+            tbody
+              tr
+                th 가챠 티켓 수령
+                td#polaris-gacha-ticket -
+              tr
+                th Pa Skill gradeup
+                td#polaris-gradeup-count -
+              tr
+                th 아이템 종류
+                td#polaris-item-count -
+              tr
+                th 카드 수
+                td#polaris-card-count -
+              tr
+                th 칭호 수
+                td#polaris-title-count -
+
+      h4.title.is-6 유닛
+      .polaris-deck-list#polaris-deck-list
+
+script(src="static/js/polaris_master.js?v=4")
+script.
+  (() => {
+    const profile = !{JSON.stringify(profileData)};
+    const scores = !{JSON.stringify(scoreData)};
+    const master = window.POLARIS_MASTER || {};
+    const grades = (master.paSkill && master.paSkill.grades) || [{ min: 0, name: 'Gray', color: '#C7CCBC' }];
+    const gradeAssetSuffixes = '0_none a b b2 c c2 d d2 e e2 f f2 f3 f4 g g2 g3 g4 h h2 h3 h4 h5 i i2 i3 i4 i5 j j2 j3 j4 j5 k'.split(' ');
+    const difficulties = master.difficulties || ['Easy', 'Normal', 'Hard', 'Influence', 'Polar'];
+    const nf = new Intl.NumberFormat();
+    const pct = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 0 });
+
+    function toInt(value) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function text(id, value) {
+      document.getElementById(id).textContent = value;
+    }
+
+    function html(id, value) {
+      document.getElementById(id).innerHTML = value;
+    }
+
+    function escapeHtml(value) {
+      return `${value ?? ''}`
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function skillText(value) {
+      return (toInt(value) / 100000).toFixed(2);
+    }
+
+    function itemCount(itemId) {
+      const item = (profile.items || []).find(entry => entry.item_id === itemId);
+      return nf.format(toInt(item && item.count));
+    }
+
+    function musicMeta(musicId) {
+      return (master.musics && master.musics[String(toInt(musicId))]) || null;
+    }
+
+    function chartMeta(musicId, difficulty) {
+      const music = musicMeta(musicId);
+      return (music && music.charts && music.charts[String(toInt(difficulty))]) || null;
+    }
+
+    function chartConstant(chart) {
+      return chart ? toInt(chart.level) * 10 + toInt(chart.constant) : 0;
+    }
+
+    function musicTitle(musicId) {
+      const meta = musicMeta(musicId);
+      return meta && meta.name ? meta.name : `곡 ${toInt(musicId)}`;
+    }
+
+    function songCredit(musicId, difficulty) {
+      const music = musicMeta(musicId);
+      const chart = chartMeta(musicId, difficulty);
+      const parts = [];
+      if (music && music.composer) {
+        parts.push(`Composer: ${music.composer}`);
+      }
+      if (chart && chart.effecter) {
+        parts.push(`Effecter: ${chart.effecter}`);
+      }
+      return parts.join(' · ');
+    }
+
+    function lastTrackHtml(musicId, difficulty) {
+      if (!musicId) {
+        return '-';
+      }
+      const meta = musicMeta(musicId);
+      const title = musicTitle(musicId);
+      const credit = songCredit(musicId, difficulty);
+      const jacket = meta && meta.jacketUrl
+        ? `<img class="polaris-last-jacket" src="${escapeHtml(meta.jacketUrl)}" alt="${escapeHtml(title)} 자켓" loading="lazy">`
+        : '';
+      return `<div class="polaris-last-track">${jacket}<div><div>${escapeHtml(title)}</div><div class="polaris-muted">${escapeHtml(credit)}</div></div></div>`;
+    }
+
+    function calculatePaSkill(chartConstant, achievementRate) {
+      const constant = toInt(chartConstant);
+      const achievement = toInt(achievementRate);
+      if (constant < 10) return 0;
+      if (achievement >= 9500) {
+        if (achievement < 9950) {
+          if (achievement >= 9800) return constant * 10000 + 50000 + (achievement - 9800) * 1000;
+          return constant * 10000 + Math.trunc((achievement - 9500) * 1000 / 6);
+        }
+        return constant * 10000 + 200000 + (achievement - 9950) * 600;
+      }
+      if (achievement >= 8000) {
+        if (achievement >= 8500) return constant * 10000 - 100000 + (achievement - 8500) * 100;
+        return (constant - 10) * ((achievement - 8000) * 5 + 7500);
+      }
+      if (achievement >= 5000) return Math.trunc((constant - 10) * (achievement - 5000) * 5 / 2);
+      return 0;
+    }
+
+    function currentSkill() {
+      const best30 = (scores || [])
+        .map(score => {
+          const meta = chartMeta(score.musicId, score.difficulty);
+          return calculatePaSkill(chartConstant(meta), score.achievementRate);
+        })
+        .sort((a, b) => b - a)
+        .slice(0, 30);
+      return best30.length ? Math.floor(best30.reduce((sum, skill) => sum + skill, 0) / 30) : 0;
+    }
+
+    function gradeFor(skill) {
+      let grade = grades[0];
+      for (const item of grades) {
+        if (skill >= item.min) grade = item;
+      }
+      const index = grades.indexOf(grade);
+      return { current: grade, next: grades[index + 1] || null };
+    }
+
+    function gradeAsset(grade) {
+      const index = grades.indexOf(grade);
+      const suffix = gradeAssetSuffixes[index];
+      return suffix ? `static/img/pa_skill/grade_name_${suffix}.png` : '';
+    }
+
+    function gradeImageHtml(grade) {
+      const imageUrl = gradeAsset(grade);
+      if (imageUrl) {
+        return `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(grade.name)} 등급">`;
+      }
+      return escapeHtml(grade.name);
+    }
+
+    function gradeProgressText(skillValue, nextGrade, progressValue) {
+      if (!nextGrade) {
+        return '최고 단계';
+      }
+      return `Pa Skill ${skillText(skillValue)} / ${skillText(nextGrade.min)} (${pct.format(progressValue)}%)`;
+    }
+
+    const skill = toInt(profile.paSkill && profile.paSkill.skill) || currentSkill();
+    const grade = gradeFor(skill);
+    const progress = grade.next ? Math.max(0, Math.min(100, ((skill - grade.current.min) / (grade.next.min - grade.current.min)) * 100)) : 100;
+    const successScores = scores.filter(score => toInt(score.clearStatus) >= 2);
+    const decks = Array.isArray(profile.decks) ? profile.decks : [];
+
+    text('polaris-player-name', profile.name || 'PLAYER');
+    text('polaris-usr-id', `usr_id ${profile.usrId || '-'}`);
+    text('polaris-crew-id', `crew_id ${profile.crewId || '-'}`);
+    text('polaris-rank', `rank ${toInt(profile.rank)}`);
+    text('polaris-skill-value', skillText(skill));
+    text('polaris-play-count', nf.format(toInt(profile.actionCounts && profile.actionCounts.game_play_count) || toInt(profile.playInfo && profile.playInfo.today_play_count)));
+    text('polaris-song-count', nf.format(new Set(scores.map(score => toInt(score.musicId))).size));
+    text('polaris-chart-count', nf.format(scores.length));
+    text('polaris-success-count', nf.format(successScores.length));
+    text('polaris-fc-count', nf.format(scores.filter(score => toInt(score.clearStatus) >= 3).length));
+    text('polaris-mira-count', itemCount('money.mira'));
+    html('polaris-last-music', lastTrackHtml(profile.playInfo && profile.playInfo.music_id, profile.playInfo && profile.playInfo.chart_difficulty_type));
+    text('polaris-last-difficulty', difficulties[toInt(profile.playInfo && profile.playInfo.chart_difficulty_type)] || '-');
+    text('polaris-tutorial', toInt(profile.isTutorialCleared) ? '완료' : '미완료');
+    text('polaris-skill-privacy', toInt(profile.privacy && profile.privacy.disp_skill_to_me) ? '표시' : '숨김');
+    text('polaris-ranking-privacy', toInt(profile.privacy && profile.privacy.allow_pa_skill_ranking) ? '허용' : '차단');
+    text('polaris-gacha-ticket', toInt(profile.gachaTicketReceived) ? '수령' : '미수령');
+    text('polaris-gradeup-count', nf.format(toInt(profile.counts && (profile.counts['PASkill．gradeup'] || profile.counts['PASkill.gradeup']))));
+    text('polaris-item-count', nf.format((profile.items || []).length));
+    text('polaris-card-count', nf.format((profile.characterCards || []).filter(card => !card.deleted).length));
+    text('polaris-title-count', nf.format((profile.nameTitles || []).length));
+
+    const mark = document.getElementById('polaris-grade-mark');
+    mark.innerHTML = gradeImageHtml(grade.current);
+    mark.style.background = gradeAsset(grade.current) ? 'transparent' : grade.current.color;
+    document.getElementById('polaris-grade-progress').style.width = `${progress}%`;
+    document.getElementById('polaris-grade-progress').style.background = grade.current.color;
+    text('polaris-grade-progress-label', gradeProgressText(skill, grade.next, progress));
+
+    const deckList = document.getElementById('polaris-deck-list');
+    deckList.innerHTML = decks.length
+      ? decks.map(deck => `
+          <div class="polaris-deck ${toInt(deck.is_select) ? 'is-selected' : ''}">
+            <strong>${deck.deck_name || `유닛 ${deck.deck_number || ''}`}</strong>
+            <div class="polaris-muted">contenter ${deck.contenter_index || '-'}</div>
+            <div class="polaris-muted">support ${[deck.supportsnap1_index, deck.supportsnap2_index, deck.supportsnap3_index, deck.supportsnap4_index].filter(Boolean).length}/4</div>
+          </div>
+        `).join('')
+      : '<div class="polaris-muted">저장된 유닛 없음</div>';
+  })();

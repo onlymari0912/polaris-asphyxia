@@ -1,0 +1,627 @@
+//DATA//
+  profile: DB.FindOne(refid, { collection: 'profile' })
+  scores: DB.Find(refid, { collection: 'score_aggregate' })
+
+- const profileData = profile || {};
+- const scoreData = Array.isArray(scores) ? scores : [];
+
+style.
+  .polaris-pa {
+    color: #243044;
+  }
+  .polaris-pa-head {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(18rem, 1fr) minmax(18rem, 1fr);
+    margin-bottom: 1rem;
+  }
+  .polaris-pa-panel {
+    background: #f8fafc;
+    padding: 1rem;
+  }
+  .polaris-pa-skill {
+    font-size: 2.4rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .polaris-grade-line {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+  .polaris-grade-emblem {
+    align-items: center;
+    display: flex;
+    min-height: 4.25rem;
+    min-width: 7rem;
+  }
+  .polaris-grade-emblem.is-next {
+    justify-content: flex-end;
+  }
+  .polaris-grade-image {
+    display: block;
+    max-height: 4rem;
+    max-width: 7rem;
+    object-fit: contain;
+  }
+  .polaris-grade-emblem[hidden],
+  .polaris-grade-image[hidden],
+  .polaris-grade-chip[hidden] {
+    display: none;
+  }
+  .polaris-grade-chip {
+    color: #1e2635;
+    font-weight: 800;
+    min-width: 7rem;
+    padding: 0.55rem 0.75rem;
+    text-align: center;
+  }
+  .polaris-grade-meter {
+    background: #d9e0ea;
+    flex: 1;
+    height: 1.45rem;
+    overflow: hidden;
+    position: relative;
+  }
+  .polaris-grade-meter span {
+    display: block;
+    height: 100%;
+  }
+  .polaris-grade-meter-label {
+    align-items: center;
+    bottom: 0;
+    color: #1e2635;
+    display: flex;
+    font-size: 0.78rem;
+    font-weight: 800;
+    justify-content: center;
+    left: 0;
+    padding: 0 0.45rem;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    text-align: center;
+    top: 0;
+  }
+  .polaris-pa-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  }
+  .polaris-pa-stat {
+    background: #ffffff;
+    padding: 0.85rem;
+  }
+  .polaris-pa-stat .heading {
+    color: #68758a;
+    letter-spacing: 0;
+    margin-bottom: 0.25rem;
+  }
+  .polaris-pa-stat .value {
+    font-size: 1.25rem;
+    font-weight: 800;
+  }
+  .polaris-pa-stat .value.is-small {
+    font-size: 1rem;
+    line-height: 1.25;
+  }
+  .polaris-pa-note {
+    color: #68758a;
+    margin-top: 0.6rem;
+  }
+  .polaris-pa-toolbar {
+    align-items: start;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: minmax(14rem, 1fr) repeat(3, minmax(10rem, auto));
+    margin-bottom: 1rem;
+  }
+  .polaris-pa-toolbar .field {
+    margin-bottom: 0;
+  }
+  .polaris-pa-table {
+    font-size: 0.86rem;
+  }
+  .polaris-pa-table th {
+    white-space: nowrap;
+  }
+  .polaris-pa-table tbody tr.is-b30 td {
+    background: #e8f7ed;
+  }
+  .polaris-pa-table tbody tr.is-outside td {
+    background: #f8fafc;
+  }
+  .polaris-pa-table .rank {
+    font-weight: 800;
+  }
+  .polaris-pa-song {
+    align-items: center;
+    display: flex;
+    gap: 0.65rem;
+    min-width: 14rem;
+  }
+  .polaris-pa-jacket {
+    aspect-ratio: 1;
+    background: #e8edf3;
+    flex: 0 0 auto;
+    height: 3.2rem;
+    object-fit: cover;
+    width: 3.2rem;
+  }
+  .polaris-pa-table .skill {
+    font-weight: 800;
+  }
+  .polaris-pa-table .muted {
+    color: #748096;
+    font-size: 0.78rem;
+  }
+  .polaris-pa-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .polaris-pa-legend span {
+    align-items: center;
+    display: inline-flex;
+    font-size: 0.8rem;
+    font-weight: 700;
+    gap: 0.4rem;
+  }
+  .polaris-pa-legend span::before {
+    content: "";
+    display: inline-block;
+    height: 0.75rem;
+    width: 1.4rem;
+  }
+  .polaris-pa-legend .is-b30::before {
+    background: #e8f7ed;
+  }
+  .polaris-pa-legend .is-outside::before {
+    background: #f8fafc;
+    border: 1px solid #d9e0ea;
+  }
+  .polaris-pa-empty {
+    color: #748096;
+    padding: 2rem;
+    text-align: center;
+  }
+  .polaris-pa-pager {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+  }
+  .polaris-pa-page-info {
+    color: #68758a;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+  @media (max-width: 860px) {
+    .polaris-pa-head,
+    .polaris-pa-toolbar {
+      grid-template-columns: 1fr;
+    }
+  }
+
+.polaris-pa
+  .card
+    .card-header
+      p.card-header-title
+        span.icon
+          i.mdi.mdi-chart-line
+        | Pa Skill
+    .card-content
+      .polaris-pa-head
+        .polaris-pa-panel
+          p.heading Pa Skill
+          .polaris-pa-skill#polaris-current-skill 0.00
+          .polaris-grade-line
+            .polaris-grade-emblem
+              img.polaris-grade-image#polaris-grade-image(src="" alt="" hidden)
+              .polaris-grade-chip#polaris-grade-chip -
+            .polaris-grade-meter
+              span#polaris-grade-meter
+              .polaris-grade-meter-label#polaris-grade-meter-label -
+        .polaris-pa-panel
+          .polaris-pa-grid
+            .polaris-pa-stat
+              p.heading Best 30
+              p.value#polaris-best30-count -
+            .polaris-pa-stat
+              p.heading Top Chart
+              p.value.is-small#polaris-top-chart -
+            .polaris-pa-stat
+              p.heading 30위 컷
+              p.value#polaris-best30-floor -
+            .polaris-pa-stat
+              p.heading 점수 기록
+              p.value#polaris-score-count -
+
+      .polaris-pa-toolbar
+        .field
+          label.label 검색
+          .control.has-icons-left
+            input.input#polaris-pa-search(type="search" placeholder="곡명, 작곡가, 이펙터")
+            span.icon.is-left
+              i.mdi.mdi-magnify
+        .field
+          label.label 범위
+          .control
+            .select.is-fullwidth
+              select#polaris-pa-range
+                option(value="all") 전체
+                option(value="b30") Best 30
+                option(value="outside") 후보
+        .field
+          label.label 난이도
+          .control
+            .select.is-fullwidth
+              select#polaris-pa-difficulty
+                option(value="all") 전체
+                option(value="0") Easy
+                option(value="1") Normal
+                option(value="2") Hard
+                option(value="3") Influence
+                option(value="4") Polar
+        .field
+          label.label 표시 개수
+          .control
+            input.input#polaris-pa-page-size(type="number" min="10" max="100" step="10" value="50")
+
+      .polaris-pa-legend
+        span.is-b30 Best 30
+        span.is-outside 후보
+
+      .table-container
+        table.table.is-striped.is-hoverable.is-fullwidth.polaris-pa-table
+          thead
+            tr
+              th #
+              th 곡
+              th 난이도
+              th 레벨
+              th Achievement
+              th Pa Skill
+              th 상태
+          tbody#polaris-pa-body
+            tr
+              td.polaris-pa-empty(colspan="7") 불러오는 중...
+      .polaris-pa-pager
+        .polaris-pa-page-info#polaris-pa-page-info -
+        .buttons.has-addons
+          button.button.is-small#polaris-pa-prev(type="button" aria-label="이전 페이지") 이전
+          button.button.is-small#polaris-pa-next(type="button" aria-label="다음 페이지") 다음
+
+script(src="static/js/polaris_master.js?v=4")
+script.
+  (() => {
+    const profile = !{JSON.stringify(profileData)};
+    const scores = !{JSON.stringify(scoreData)};
+    const master = window.POLARIS_MASTER || {};
+    const difficulties = master.difficulties || ['Easy', 'Normal', 'Hard', 'Influence', 'Polar'];
+    const clearLabels = ['No Play', 'Good Try', 'Success', 'Full Combo', 'All Perfect'];
+    const grades = (master.paSkill && master.paSkill.grades) || [{ min: 0, name: 'Gray', color: '#C7CCBC' }];
+    const gradeAssetSuffixes = '0_none a b b2 c c2 d d2 e e2 f f2 f3 f4 g g2 g3 g4 h h2 h3 h4 h5 i i2 i3 i4 i5 j j2 j3 j4 j5 k'.split(' ');
+    const nf = new Intl.NumberFormat();
+    const pct = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 0 });
+    const body = document.getElementById('polaris-pa-body');
+    const search = document.getElementById('polaris-pa-search');
+    const range = document.getElementById('polaris-pa-range');
+    const difficulty = document.getElementById('polaris-pa-difficulty');
+    const pageSizeInput = document.getElementById('polaris-pa-page-size');
+    const pageInfo = document.getElementById('polaris-pa-page-info');
+    const prevPageButton = document.getElementById('polaris-pa-prev');
+    const nextPageButton = document.getElementById('polaris-pa-next');
+
+    function toInt(value) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function escapeHtml(value) {
+      return `${value ?? ''}`
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function skillText(value) {
+      return (toInt(value) / 100000).toFixed(2);
+    }
+
+    function achievement(value) {
+      return `${pct.format(toInt(value) / 100)}%`;
+    }
+
+    function gradeFor(skill) {
+      let grade = grades[0];
+      for (const item of grades) {
+        if (skill >= item.min) grade = item;
+      }
+      const index = grades.indexOf(grade);
+      return { current: grade, next: grades[index + 1] || null };
+    }
+
+    function gradeAsset(grade) {
+      const index = grades.indexOf(grade);
+      const suffix = gradeAssetSuffixes[index];
+      return suffix ? `static/img/pa_skill/grade_name_${suffix}.png` : '';
+    }
+
+    function gradeProgressText(skill, nextGrade, progressValue) {
+      if (!nextGrade) {
+        return '최고 단계';
+      }
+      return `Pa Skill ${skillText(skill)} / ${skillText(nextGrade.min)} (${pct.format(progressValue)}%)`;
+    }
+
+    function setGradeEmblem(image, chip, gradeItem) {
+      const imageUrl = gradeAsset(gradeItem);
+      chip.textContent = gradeItem.name;
+      chip.style.background = gradeItem.color;
+      if (imageUrl) {
+        image.src = imageUrl;
+        image.alt = `${gradeItem.name} 등급`;
+        image.hidden = false;
+        chip.hidden = true;
+      } else {
+        image.hidden = true;
+        chip.hidden = false;
+      }
+    }
+
+    function musicMeta(musicId) {
+      return (master.musics && master.musics[String(toInt(musicId))]) || null;
+    }
+
+    function chartMeta(musicId, chartDifficulty) {
+      const music = musicMeta(musicId);
+      return (music && music.charts && music.charts[String(toInt(chartDifficulty))]) || null;
+    }
+
+    function chartConstant(chart) {
+      return chart ? toInt(chart.level) * 10 + toInt(chart.constant) : 0;
+    }
+
+    function musicTitle(musicId) {
+      const meta = musicMeta(musicId);
+      return meta && meta.name ? meta.name : `곡 ${toInt(musicId)}`;
+    }
+
+    function songCredit(musicId, chartDifficulty) {
+      const music = musicMeta(musicId);
+      const chart = chartMeta(musicId, chartDifficulty);
+      const parts = [];
+      if (music && music.composer) {
+        parts.push(`Composer: ${music.composer}`);
+      }
+      if (chart && chart.effecter) {
+        parts.push(`Effecter: ${chart.effecter}`);
+      }
+      return parts.join(' · ');
+    }
+
+    function jacketImage(musicId, title) {
+      const meta = musicMeta(musicId);
+      const url = meta && meta.jacketUrl ? meta.jacketUrl : '';
+      if (!url) {
+        return '';
+      }
+      return `<img class="polaris-pa-jacket" src="${escapeHtml(url)}" alt="${escapeHtml(title)} 자켓" loading="lazy">`;
+    }
+
+    function scoreKey(musicId, difficulty) {
+      return `${toInt(musicId)}:${toInt(difficulty)}`;
+    }
+
+    function scoreTimestamp(score) {
+      return toInt(score && score.updatedAt && score.updatedAt.$$date) || toInt(score && score.timestamp) || 0;
+    }
+
+    const scoreByKey = new Map();
+    for (const score of scores || []) {
+      const key = scoreKey(score.musicId, score.difficulty);
+      const prev = scoreByKey.get(key);
+      if (!prev || scoreTimestamp(score) > scoreTimestamp(prev)) {
+        scoreByKey.set(key, score);
+      }
+    }
+
+    function calculatePaSkill(chartConstant, achievementRate) {
+      const constant = toInt(chartConstant);
+      const achievementValue = toInt(achievementRate);
+      if (constant < 10) return 0;
+      if (achievementValue >= 9500) {
+        if (achievementValue < 9950) {
+          if (achievementValue >= 9800) {
+            return constant * 10000 + 50000 + (achievementValue - 9800) * 1000;
+          }
+          return constant * 10000 + Math.trunc((achievementValue - 9500) * 1000 / 6);
+        }
+        return constant * 10000 + 200000 + (achievementValue - 9950) * 600;
+      }
+      if (achievementValue >= 8000) {
+        if (achievementValue >= 8500) {
+          return constant * 10000 - 100000 + (achievementValue - 8500) * 100;
+        }
+        return (constant - 10) * ((achievementValue - 8000) * 5 + 7500);
+      }
+      if (achievementValue >= 5000) {
+        return Math.trunc((constant - 10) * (achievementValue - 5000) * 5 / 2);
+      }
+      return 0;
+    }
+
+    function chartFromStored(entry, index) {
+      const musicId = toInt(entry.music_id);
+      const chartDifficulty = toInt(entry.chart_difficulty_type);
+      const meta = chartMeta(musicId, chartDifficulty);
+      const score = scoreByKey.get(scoreKey(musicId, chartDifficulty)) || null;
+      return {
+        rank: toInt(entry.rank) || index + 1,
+        musicId,
+        difficulty: chartDifficulty,
+        skill: toInt(entry.skill),
+        score,
+        meta,
+        title: musicTitle(musicId),
+        credit: songCredit(musicId, chartDifficulty),
+      };
+    }
+
+    const storedPaCharts = Array.isArray(profile.paSkill && profile.paSkill.charts)
+      ? profile.paSkill.charts
+        .map(chartFromStored)
+        .filter(chart => chart.musicId > 0 && chart.difficulty >= 0 && chart.difficulty <= 4)
+        .sort((a, b) => a.rank - b.rank || b.skill - a.skill)
+      : [];
+
+    const calculatedPaCharts = (scores || [])
+      .map(score => {
+        const musicId = toInt(score.musicId);
+        const chartDifficulty = toInt(score.difficulty);
+        const meta = chartMeta(musicId, chartDifficulty);
+        const chartConstantValue = chartConstant(meta);
+        return {
+          rank: 0,
+          musicId,
+          difficulty: chartDifficulty,
+          skill: calculatePaSkill(chartConstantValue, score.achievementRate),
+          score,
+          meta,
+          title: musicTitle(musicId),
+          credit: songCredit(musicId, chartDifficulty),
+        };
+      })
+      .filter(chart => chart.musicId > 0 && chart.difficulty >= 0 && chart.difficulty <= 4)
+      .sort((a, b) => b.skill - a.skill || a.musicId - b.musicId || a.difficulty - b.difficulty)
+      .map((chart, index) => ({ ...chart, rank: index + 1 }));
+
+    const paCharts = storedPaCharts.length ? storedPaCharts : calculatedPaCharts;
+    const best30 = paCharts.filter(chart => chart.rank > 0 && chart.rank <= 30);
+    const fallbackSkill = best30.length ? Math.floor(best30.reduce((sum, chart) => sum + chart.skill, 0) / 30) : 0;
+    const currentSkill = toInt(profile.paSkill && profile.paSkill.skill) || fallbackSkill;
+    const grade = gradeFor(currentSkill);
+    const progress = grade.next ? Math.max(0, Math.min(100, ((currentSkill - grade.current.min) / (grade.next.min - grade.current.min)) * 100)) : 100;
+    const topChart = paCharts[0] || null;
+
+    document.getElementById('polaris-current-skill').textContent = skillText(currentSkill);
+    document.getElementById('polaris-best30-count').textContent = `${nf.format(best30.length)} / 30`;
+    document.getElementById('polaris-top-chart').textContent = topChart ? `${topChart.title} ${skillText(topChart.skill)}` : '-';
+    document.getElementById('polaris-best30-floor').textContent = best30.length ? skillText(Math.min(...best30.map(chart => chart.skill))) : '-';
+    document.getElementById('polaris-score-count').textContent = nf.format(scores.length);
+    const chip = document.getElementById('polaris-grade-chip');
+    const gradeImage = document.getElementById('polaris-grade-image');
+    setGradeEmblem(gradeImage, chip, grade.current);
+
+    const meter = document.getElementById('polaris-grade-meter');
+    meter.style.width = `${progress}%`;
+    meter.style.background = grade.current.color;
+    document.getElementById('polaris-grade-meter-label').textContent = gradeProgressText(currentSkill, grade.next, progress);
+
+    function filterRows() {
+      const query = search.value.trim().toLowerCase();
+      const rangeValue = range.value;
+      const difficultyValue = difficulty.value;
+      return paCharts.filter(chart => {
+        if (query && !`${chart.title} ${chart.credit} ${chart.musicId}`.toLowerCase().includes(query)) {
+          return false;
+        }
+        if (rangeValue === 'b30' && chart.rank > 30) {
+          return false;
+        }
+        if (rangeValue === 'outside' && chart.rank <= 30) {
+          return false;
+        }
+        if (difficultyValue !== 'all' && chart.difficulty !== Number(difficultyValue)) {
+          return false;
+        }
+        return true;
+      });
+    }
+
+    function pageSize() {
+      const value = toInt(pageSizeInput.value) || 50;
+      return Math.max(10, Math.min(100, value));
+    }
+
+    let currentPage = 1;
+
+    function updatePager(totalRows, visibleCount) {
+      const size = pageSize();
+      const totalPages = Math.max(1, Math.ceil(totalRows / size));
+      const start = totalRows > 0 ? ((currentPage - 1) * size) + 1 : 0;
+      const end = totalRows > 0 ? start + visibleCount - 1 : 0;
+      pageInfo.textContent = totalRows > 0
+        ? `${nf.format(start)}-${nf.format(end)} / ${nf.format(totalRows)}개 · ${currentPage}/${totalPages} 페이지`
+        : '0개';
+      prevPageButton.disabled = currentPage <= 1;
+      nextPageButton.disabled = currentPage >= totalPages;
+    }
+
+    function render() {
+      const rows = filterRows();
+      if (rows.length === 0) {
+        body.innerHTML = '<tr><td class="polaris-pa-empty" colspan="7">점수 기록 없음</td></tr>';
+        currentPage = 1;
+        updatePager(0, 0);
+        return;
+      }
+      const size = pageSize();
+      const totalPages = Math.max(1, Math.ceil(rows.length / size));
+      currentPage = Math.max(1, Math.min(currentPage, totalPages));
+      const start = (currentPage - 1) * size;
+      const pageRows = rows.slice(start, start + size);
+      updatePager(rows.length, pageRows.length);
+      body.innerHTML = pageRows.map(chart => {
+        const score = chart.score || {};
+        const clear = clearLabels[Math.max(0, Math.min(4, toInt(score.clearStatus)))] || '-';
+        const level = chart.meta ? `${toInt(chart.meta.level)}(${toInt(chart.meta.constant)})` : '-';
+        return `
+          <tr class="${chart.rank <= 30 ? 'is-b30' : 'is-outside'}">
+            <td class="rank">${chart.rank || '-'}</td>
+            <td>
+              <div class="polaris-pa-song">
+                ${jacketImage(chart.musicId, chart.title)}
+                <div>
+                  <div>${escapeHtml(chart.title)}</div>
+                  <div class="muted">${escapeHtml(chart.credit)}</div>
+                </div>
+              </div>
+            </td>
+            <td>${difficulties[chart.difficulty] || chart.difficulty}</td>
+            <td>${level}</td>
+            <td>${score.achievementRate != null ? achievement(score.achievementRate) : '-'}</td>
+            <td class="skill">${skillText(chart.skill)}</td>
+            <td>${clear}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function resetPageAndRender() {
+      pageSizeInput.value = pageSize();
+      currentPage = 1;
+      render();
+    }
+
+    search.addEventListener('input', resetPageAndRender);
+    range.addEventListener('change', resetPageAndRender);
+    difficulty.addEventListener('change', resetPageAndRender);
+    pageSizeInput.addEventListener('change', resetPageAndRender);
+    prevPageButton.addEventListener('click', () => {
+      currentPage = Math.max(1, currentPage - 1);
+      render();
+    });
+    nextPageButton.addEventListener('click', () => {
+      currentPage += 1;
+      render();
+    });
+    render();
+  })();

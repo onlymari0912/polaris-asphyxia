@@ -1,0 +1,1179 @@
+//DATA//
+  profile: DB.FindOne(refid, { collection: 'profile' })
+  scores: DB.Find(refid, { collection: 'score_aggregate' })
+
+- const profileData = profile || {};
+- const scoreData = Array.isArray(scores) ? scores : [];
+
+style.
+  .polaris-profile {
+    --polaris-soft: #f6f8fb;
+    --polaris-text: #273142;
+    color: var(--polaris-text);
+  }
+  .polaris-summary {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    margin-bottom: 1rem;
+  }
+  .polaris-summary .box {
+    box-shadow: none;
+    margin-bottom: 0;
+  }
+  .polaris-summary .heading {
+    color: #6b778c;
+    letter-spacing: 0;
+  }
+  .polaris-summary .title {
+    color: var(--polaris-text);
+    margin-bottom: 0;
+  }
+  .polaris-toolbar {
+    align-items: start;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: minmax(14rem, 1fr) repeat(4, minmax(9rem, auto));
+    margin-bottom: 1rem;
+  }
+  .polaris-score-table {
+    font-size: 0.86rem;
+  }
+  .polaris-score-table th {
+    white-space: nowrap;
+  }
+  .polaris-score-table td {
+    vertical-align: top;
+  }
+  .polaris-score-table td.polaris-score-data {
+    padding: 0;
+    text-align: left;
+    vertical-align: middle;
+  }
+  .polaris-score-table td.polaris-score-data.is-empty {
+    color: #9aa4b2;
+    padding: 0.5rem 0.75rem;
+  }
+  .polaris-score-table .song-title {
+    font-weight: 700;
+  }
+  .polaris-song-cell {
+    align-items: center;
+    display: flex;
+    gap: 0.65rem;
+    min-width: 14rem;
+  }
+  .polaris-jacket {
+    aspect-ratio: 1;
+    background: #e8edf3;
+    flex: 0 0 auto;
+    height: 3.2rem;
+    object-fit: cover;
+    width: 3.2rem;
+  }
+  .polaris-score-table .song-credit {
+    color: #7b8798;
+    font-size: 0.78rem;
+  }
+  .polaris-score-button {
+    all: unset;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    min-height: 2.25rem;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    width: 100%;
+  }
+  .polaris-score-button:focus-visible {
+    outline: 2px solid #3273dc;
+    outline-offset: -2px;
+  }
+  .polaris-score-data.status-none {
+    background: #e8edf3;
+    color: #637083;
+  }
+  .polaris-score-data.status-try {
+    background: #fff2cc;
+    color: #7a5a00;
+  }
+  .polaris-score-data.status-success {
+    background: #dff5e7;
+    color: #217344;
+  }
+  .polaris-score-data.status-fc {
+    background: #d9ecff;
+    color: #0057c2;
+  }
+  .polaris-score-data.status-ap {
+    background: #f2e6ff;
+    color: #6b3ca0;
+  }
+  .polaris-detail-table th {
+    color: #6b778c;
+    width: 12rem;
+  }
+  .polaris-modal-head {
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .polaris-modal-heading {
+    align-items: center;
+    display: flex;
+    flex: 1 1 auto;
+    gap: 0.85rem;
+    min-width: 0;
+  }
+  .polaris-modal-jacket {
+    flex: 0 0 auto;
+  }
+  .polaris-modal-jacket .polaris-jacket {
+    height: 4rem;
+    width: 4rem;
+  }
+  .polaris-modal-title-text {
+    min-width: 0;
+  }
+  .polaris-modal-title-text .modal-card-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .polaris-difficulty-tabs {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 0.85rem;
+    overflow-x: auto;
+  }
+  .polaris-difficulty-tab {
+    background: #eef3f8;
+    border: 1px solid #dce4ee;
+    color: #637083;
+    cursor: pointer;
+    flex: 0 0 auto;
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 0.45rem 0.7rem;
+  }
+  .polaris-difficulty-tab.is-active {
+    background: #273142;
+    border-color: #273142;
+    color: #fff;
+  }
+  .polaris-difficulty-tab:disabled {
+    color: #a0a9b6;
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+  .polaris-detail-status {
+    font-weight: 700;
+  }
+  .polaris-detail-status.none {
+    color: #637083;
+  }
+  .polaris-detail-status.try {
+    color: #7a5a00;
+  }
+  .polaris-detail-status.success {
+    color: #217344;
+  }
+  .polaris-detail-status.fc {
+    color: #0057c2;
+  }
+  .polaris-detail-status.ap {
+    color: #6b3ca0;
+  }
+  #polaris-score-modal {
+    align-items: flex-start;
+    padding-top: 4rem;
+  }
+  #polaris-score-modal .modal-card {
+    max-height: calc(100vh - 5rem);
+  }
+  #polaris-score-modal .modal-card-body {
+    overflow-y: auto;
+  }
+  .polaris-detail-task {
+    border-top: 1px solid #e6ebf2;
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+  .polaris-detail-task-title {
+    color: #273142;
+    font-size: 0.95rem;
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+  }
+  .polaris-detail-task-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 1fr;
+  }
+  .polaris-detail-task-item {
+    background: #f8fafc;
+    padding: 0.75rem;
+  }
+  .polaris-detail-task-head {
+    align-items: baseline;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+    margin-bottom: 0.55rem;
+  }
+  .polaris-detail-task-label {
+    color: #68758a;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .polaris-detail-task-value {
+    font-weight: 800;
+    text-align: right;
+  }
+  .polaris-detail-task-track {
+    background: #e1e7ef;
+    height: 0.65rem;
+    overflow: hidden;
+    position: relative;
+  }
+  .polaris-detail-task-bar {
+    padding-bottom: 1rem;
+    position: relative;
+  }
+  .polaris-detail-task-track .polaris-detail-task-fill {
+    display: block;
+    height: 100%;
+  }
+  .polaris-detail-task-track .polaris-detail-task-marker {
+    background: #fff;
+    bottom: 0;
+    opacity: 0.9;
+    position: absolute;
+    top: 0;
+    width: 2px;
+  }
+  .polaris-detail-task-track .polaris-detail-task-marker:nth-child(2) {
+    left: 25%;
+  }
+  .polaris-detail-task-track .polaris-detail-task-marker:nth-child(3) {
+    left: 50%;
+  }
+  .polaris-detail-task-track .polaris-detail-task-marker:nth-child(4) {
+    left: 75%;
+  }
+  .polaris-detail-task-track .polaris-detail-task-marker.is-achieved {
+    background: #273142;
+    opacity: 0.45;
+  }
+  .polaris-detail-task-track.likes .polaris-detail-task-fill {
+    background: #ffca7a;
+  }
+  .polaris-detail-task-track.achievement .polaris-detail-task-fill {
+    background: #7cc7ff;
+  }
+  .polaris-detail-task-track.combo .polaris-detail-task-fill {
+    background: #b69cff;
+  }
+  .polaris-detail-task-track.success .polaris-detail-task-fill {
+    background: #75d69c;
+  }
+  .polaris-detail-task-point {
+    color: #637083;
+    font-size: 0.68rem;
+    font-weight: 800;
+    overflow: hidden;
+    padding-right: 0.35rem;
+    position: absolute;
+    text-align: right;
+    text-overflow: ellipsis;
+    top: 0.78rem;
+    white-space: nowrap;
+  }
+  .polaris-detail-task-point.is-achieved {
+    color: #273142;
+  }
+  .polaris-empty {
+    padding: 2rem;
+    text-align: center;
+  }
+  .polaris-score-pager {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+  }
+  .polaris-score-page-info {
+    color: #68758a;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+  @media (max-width: 980px) {
+    .polaris-toolbar {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 680px) {
+    .polaris-toolbar {
+      grid-template-columns: 1fr;
+    }
+    .polaris-detail-task-grid {
+      grid-template-columns: 1fr;
+    }
+    .polaris-score-table {
+      font-size: 0.8rem;
+    }
+  }
+
+.polaris-profile
+  .card
+    .card-header
+      p.card-header-title
+        span.icon
+          i.mdi.mdi-music-box-multiple
+        | SCORE
+    .card-content
+      .level
+        .level-left
+          .level-item
+            div
+              p.heading 플레이어
+              p.title.is-5= profileData.name || 'PLAYER'
+        .level-right
+          .level-item
+            span.tag.is-light RefID #{refid}
+          if profileData.usrId != null
+            .level-item
+              span.tag.is-info.is-light usr_id #{profileData.usrId}
+
+      .polaris-summary
+        .box
+          p.heading 기록된 곡
+          p.title.is-5#polaris-summary-songs -
+        .box
+          p.heading 기록된 보면
+          p.title.is-5#polaris-summary-charts -
+        .box
+          p.heading 총 플레이
+          p.title.is-5#polaris-summary-plays -
+        .box
+          p.heading Success 비율
+          p.title.is-5#polaris-summary-success-rate -
+        .box
+          p.heading Full Combo
+          p.title.is-5#polaris-summary-fc -
+        .box
+          p.heading All Perfect
+          p.title.is-5#polaris-summary-ap -
+
+      .polaris-toolbar
+        .field
+          label.label 검색
+          .control.has-icons-left
+            input.input#polaris-score-search(type="search" placeholder="곡명, 작곡가, 이펙터")
+            span.icon.is-left
+              i.mdi.mdi-magnify
+        .field
+          label.label 난이도
+          .control
+            .select.is-fullwidth
+              select#polaris-difficulty-filter
+                option(value="all") 전체
+                option(value="0") Easy
+                option(value="1") Normal
+                option(value="2") Hard
+                option(value="3") Influence
+                option(value="4") Polar
+        .field
+          label.label 상태
+          .control
+            .select.is-fullwidth
+              select#polaris-status-filter
+                option(value="all") 전체
+                option(value="played") 플레이 기록 있음
+                option(value="success") Success+
+                option(value="fc") Full Combo+
+                option(value="ap") All Perfect
+        .field
+          label.label 정렬
+          .control
+            .select.is-fullwidth
+              select#polaris-sort
+                option(value="musicId") 곡 순서
+                option(value="title") 제목
+                option(value="score") Likes
+                option(value="achievement") Achievement
+                option(value="plays") 플레이 수
+        .field
+          label.label 표시 개수
+          .control
+            input.input#polaris-score-page-size(type="number" min="10" max="100" step="10" value="50")
+
+      .table-container
+        table.table.is-striped.is-hoverable.is-fullwidth.polaris-score-table
+          thead
+            tr
+              th 곡
+              th Easy
+              th Normal
+              th Hard
+              th Influence
+              th Polar
+          tbody#polaris-score-body
+            tr
+              td.polaris-empty(colspan="6") 불러오는 중...
+      .polaris-score-pager
+        .polaris-score-page-info#polaris-score-page-info -
+        .buttons.has-addons
+          button.button.is-small#polaris-score-prev(type="button" aria-label="이전 페이지") 이전
+          button.button.is-small#polaris-score-next(type="button" aria-label="다음 페이지") 다음
+
+  .modal#polaris-score-modal
+    .modal-background
+    .modal-card
+      header.modal-card-head.polaris-modal-head
+        .polaris-modal-heading
+          .polaris-modal-jacket#polaris-modal-header-jacket
+          .polaris-modal-title-text
+            p.modal-card-title#polaris-modal-title 기록 상세
+        button.delete#polaris-modal-close(type="button" aria-label="닫기")
+      section.modal-card-body
+        #polaris-modal-difficulties.polaris-difficulty-tabs(role="tablist" aria-label="난이도")
+        table.table.is-fullwidth.is-striped.polaris-detail-table
+          tbody
+            tr
+              th 레벨
+              td#polaris-modal-level -
+            tr
+              th Effecter
+              td#polaris-modal-effecter -
+            tr
+              th Composer
+              td#polaris-modal-composer -
+            tr
+              th 상태
+              td#polaris-modal-status.polaris-detail-status -
+            tr
+              th Achievement
+              td#polaris-modal-achievement -
+            tr
+              th Likes
+              td#polaris-modal-score -
+            tr
+              th Max Combo
+              td#polaris-modal-combo -
+            tr
+              th 플레이 수
+              td#polaris-modal-play-count -
+            tr
+              th Success Count
+              td#polaris-modal-success-count -
+            tr
+              th Full Combo
+              td#polaris-modal-fc-count -
+            tr
+              th All Perfect
+              td#polaris-modal-ap-count -
+            tr
+              th Rank
+              td#polaris-modal-rank -
+        .polaris-detail-task#polaris-modal-task-section
+          .polaris-detail-task-title PA Task 진행도
+          #polaris-modal-task
+      footer.modal-card-foot
+        button.button#polaris-modal-ok(type="button") 닫기
+
+script(src="static/js/polaris_master.js?v=4")
+script.
+  (() => {
+    const rawScores = !{JSON.stringify(scoreData)};
+    const rawMissions = !{JSON.stringify(profileData.musicMissions || [])};
+    const master = window.POLARIS_MASTER || {};
+    const difficulties = [
+      { id: 0, label: 'Easy' },
+      { id: 1, label: 'Normal' },
+      { id: 2, label: 'Hard' },
+      { id: 3, label: 'Influence' },
+      { id: 4, label: 'Polar' },
+    ];
+    const statusLabels = {
+      0: ['NO PLAY', 'none'],
+      1: ['GOOD TRY', 'try'],
+      2: ['SUCCESS', 'success'],
+      3: ['FULL COMBO', 'fc'],
+      4: ['ALL PERFECT', 'ap'],
+    };
+    const statusOrder = { all: 0, played: 1, success: 2, fc: 3, ap: 4 };
+    const body = document.getElementById('polaris-score-body');
+    const search = document.getElementById('polaris-score-search');
+    const difficultyFilter = document.getElementById('polaris-difficulty-filter');
+    const statusFilter = document.getElementById('polaris-status-filter');
+    const sortSelect = document.getElementById('polaris-sort');
+    const pageSizeInput = document.getElementById('polaris-score-page-size');
+    const pageInfo = document.getElementById('polaris-score-page-info');
+    const prevPageButton = document.getElementById('polaris-score-prev');
+    const nextPageButton = document.getElementById('polaris-score-next');
+    const modal = document.getElementById('polaris-score-modal');
+    const scoreStore = new Map();
+    const numberFormat = new Intl.NumberFormat();
+    const pctFormat = new Intl.NumberFormat(undefined, {
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 0,
+    });
+
+    function toInt(value) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function escapeHtml(value) {
+      return `${value ?? ''}`
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function musicTitle(score) {
+      const meta = musicMeta(score.musicId);
+      if (meta && meta.name) {
+        return meta.name;
+      }
+      const title = score.musicTitle || score.musicName || score.songTitle || score.title || score.name;
+      if (title != null && `${title}`.trim()) {
+        return `${title}`.trim();
+      }
+      return `곡 ${toInt(score.musicId)}`;
+    }
+
+    function statusInfo(status) {
+      return statusLabels[Math.max(0, Math.min(4, toInt(status)))] || statusLabels[0];
+    }
+
+    function achievement(value) {
+      return `${pctFormat.format(toInt(value) / 100)}%`;
+    }
+
+    function musicMeta(musicId) {
+      return (master.musics && master.musics[String(toInt(musicId))]) || null;
+    }
+
+    function chartMeta(musicId, difficulty) {
+      const music = musicMeta(musicId);
+      return (music && music.charts && music.charts[String(toInt(difficulty))]) || null;
+    }
+
+    function scoreKey(musicId, difficulty) {
+      return `${musicId}:${difficulty}`;
+    }
+
+    function jacketUrl(musicId) {
+      const meta = musicMeta(musicId);
+      return meta && meta.jacketUrl ? meta.jacketUrl : '';
+    }
+
+    function jacketImage(musicId, title) {
+      const url = jacketUrl(musicId);
+      if (!url) {
+        return '';
+      }
+      return `<img class="polaris-jacket" src="${escapeHtml(url)}" alt="${escapeHtml(title)} 자켓" loading="lazy">`;
+    }
+
+    function unique(values) {
+      return Array.from(new Set(values.filter(value => value != null && `${value}`.trim())));
+    }
+
+    function rowCredit(row) {
+      const music = musicMeta(row.musicId);
+      const composers = unique([music && music.composer]);
+      const effecters = unique(Array.from(row.charts.entries())
+        .map(([difficulty]) => {
+          const chart = chartMeta(row.musicId, difficulty);
+          return chart && chart.effecter;
+        }));
+      const parts = [];
+      if (composers.length > 0) {
+        parts.push(`Composer: ${composers.join(' / ')}`);
+      }
+      if (effecters.length > 0) {
+        parts.push(`Effecter: ${effecters.join(' / ')}`);
+      }
+      return parts.join(' · ');
+    }
+
+    function buildRows(scores) {
+      const rows = new Map();
+      for (const score of scores || []) {
+        const musicId = toInt(score.musicId);
+        const difficulty = toInt(score.difficulty);
+        if (!musicId || difficulty < 0 || difficulty > 4) {
+          continue;
+        }
+        if (!rows.has(musicId)) {
+          rows.set(musicId, {
+            musicId,
+            title: musicTitle(score),
+            charts: new Map(),
+          });
+        }
+        const row = rows.get(musicId);
+        row.title = row.title || musicTitle(score);
+        score.displayTitle = row.title;
+        row.charts.set(difficulty, score);
+        scoreStore.set(scoreKey(musicId, difficulty), score);
+      }
+      return Array.from(rows.values());
+    }
+
+    function bestOf(row, field) {
+      let best = 0;
+      for (const score of row.charts.values()) {
+        best = Math.max(best, toInt(score[field]));
+      }
+      return best;
+    }
+
+    function totalOf(row, field) {
+      let total = 0;
+      for (const score of row.charts.values()) {
+        total += toInt(score[field]);
+      }
+      return total;
+    }
+
+    function matchesStatus(score, status) {
+      if (status === 'all') {
+        return true;
+      }
+      return toInt(score.clearStatus) >= statusOrder[status];
+    }
+
+    function renderCell(score, row, difficulty) {
+      if (!score) {
+        return '<td class="polaris-score-data is-empty">-</td>';
+      }
+      const status = statusInfo(score.clearStatus);
+      const key = scoreKey(row.musicId, difficulty.id);
+      return `
+        <td class="polaris-score-data status-${status[1]}">
+          <button class="polaris-score-button" type="button" data-score-key="${key}" aria-label="${escapeHtml(row.title)} ${difficulty.label} 기록 상세">${achievement(score.achievementRate)}</button>
+        </td>
+      `;
+    }
+
+    function renderSummary(rows) {
+      const chartScores = rows.flatMap(row => Array.from(row.charts.values()));
+      const successCharts = chartScores.filter(score => toInt(score.clearStatus) >= 2).length;
+      document.getElementById('polaris-summary-songs').textContent = numberFormat.format(rows.length);
+      document.getElementById('polaris-summary-charts').textContent = numberFormat.format(chartScores.length);
+      document.getElementById('polaris-summary-plays').textContent = numberFormat.format(chartScores.reduce((sum, score) => sum + toInt(score.playCount), 0));
+      document.getElementById('polaris-summary-success-rate').textContent = chartScores.length ? `${pctFormat.format((successCharts / chartScores.length) * 100)}%` : '-';
+      document.getElementById('polaris-summary-fc').textContent = numberFormat.format(chartScores.filter(score => toInt(score.clearStatus) >= 3).length);
+      document.getElementById('polaris-summary-ap').textContent = numberFormat.format(chartScores.filter(score => toInt(score.clearStatus) >= 4).length);
+    }
+
+    function applyFilters(rows) {
+      const query = search.value.trim().toLowerCase();
+      const difficulty = difficultyFilter.value;
+      const status = statusFilter.value;
+      return rows.filter(row => {
+        const text = `${row.title} ${row.musicId}`.toLowerCase();
+        if (query && !text.includes(query)) {
+          const credits = rowCredit(row).toLowerCase();
+          if (!credits.includes(query)) {
+            return false;
+          }
+        }
+        const charts = difficulty === 'all'
+          ? Array.from(row.charts.values())
+          : [row.charts.get(Number(difficulty))].filter(Boolean);
+        return charts.some(score => matchesStatus(score, status));
+      });
+    }
+
+    function sortRows(rows) {
+      const sort = sortSelect.value;
+      rows.sort((a, b) => {
+        if (sort === 'title') {
+          return a.title.localeCompare(b.title, undefined, { numeric: true });
+        }
+        if (sort === 'score') {
+          return bestOf(b, 'score') - bestOf(a, 'score') || a.musicId - b.musicId;
+        }
+        if (sort === 'achievement') {
+          return bestOf(b, 'achievementRate') - bestOf(a, 'achievementRate') || a.musicId - b.musicId;
+        }
+        if (sort === 'plays') {
+          return totalOf(b, 'playCount') - totalOf(a, 'playCount') || a.musicId - b.musicId;
+        }
+        return a.musicId - b.musicId;
+      });
+      return rows;
+    }
+
+    function pageSize() {
+      const value = toInt(pageSizeInput.value) || 50;
+      return Math.max(10, Math.min(100, value));
+    }
+
+    let currentPage = 1;
+
+    function updatePager(totalRows, visibleCount) {
+      const size = pageSize();
+      const totalPages = Math.max(1, Math.ceil(totalRows / size));
+      const start = totalRows > 0 ? ((currentPage - 1) * size) + 1 : 0;
+      const end = totalRows > 0 ? start + visibleCount - 1 : 0;
+      pageInfo.textContent = totalRows > 0
+        ? `${numberFormat.format(start)}-${numberFormat.format(end)} / ${numberFormat.format(totalRows)}개 · ${currentPage}/${totalPages} 페이지`
+        : '0개';
+      prevPageButton.disabled = currentPage <= 1;
+      nextPageButton.disabled = currentPage >= totalPages;
+    }
+
+    function renderTable() {
+      const visibleRows = sortRows(applyFilters(allRows).slice());
+      if (visibleRows.length === 0) {
+        body.innerHTML = '<tr><td class="polaris-empty" colspan="6">기록 없음</td></tr>';
+        currentPage = 1;
+        updatePager(0, 0);
+        return;
+      }
+      const size = pageSize();
+      const totalPages = Math.max(1, Math.ceil(visibleRows.length / size));
+      currentPage = Math.max(1, Math.min(currentPage, totalPages));
+      const start = (currentPage - 1) * size;
+      const pageRows = visibleRows.slice(start, start + size);
+      updatePager(visibleRows.length, pageRows.length);
+      body.innerHTML = pageRows.map(row => `
+        <tr>
+          <td>
+            <div class="polaris-song-cell">
+                ${jacketImage(row.musicId, row.title)}
+                <div>
+                  <div class="song-title">${escapeHtml(row.title)}</div>
+                  <div class="song-credit">${escapeHtml(rowCredit(row))}</div>
+                </div>
+              </div>
+          </td>
+          ${difficulties.map(difficulty => renderCell(row.charts.get(difficulty.id), row, difficulty)).join('')}
+        </tr>
+      `).join('');
+    }
+
+    function setText(id, value) {
+      document.getElementById(id).textContent = value;
+    }
+
+    const rankValues = { NONE: -1, NODATA: 0, D: 3, C: 4, B: 5, A: 6, S: 7, SS: 8, MAX: 9 };
+    const rankLabels = Object.fromEntries(Object.entries(rankValues).map(([label, value]) => [value, label]));
+    const achievementRankRates = {
+      NODATA: 0,
+      D: 0,
+      C: 7000,
+      B: 8000,
+      A: 8500,
+      AA: 9000,
+      AAA: 9500,
+      S: 9800,
+      SS: 9850,
+      SSS: 9900,
+      SSS_PLUS: 9950,
+      SSS_AP: 10000,
+    };
+    function rankValue(rank) {
+      if (typeof rank === 'string') {
+        return rankValues[rank] == null ? 0 : rankValues[rank];
+      }
+      return toInt(rank);
+    }
+
+    function rankLabel(rank) {
+      if (typeof rank === 'string') {
+        return rank || '-';
+      }
+      return rankLabels[toInt(rank)] || '-';
+    }
+
+    const rankScoreRates = {
+      [rankValues.D]: 0,
+      [rankValues.C]: 20,
+      [rankValues.B]: 40,
+      [rankValues.A]: 60,
+      [rankValues.S]: 80,
+      [rankValues.SS]: 100,
+    };
+    const rankComboRates = {
+      [rankValues.D]: 0,
+      [rankValues.C]: 10,
+      [rankValues.B]: 20,
+      [rankValues.A]: 35,
+      [rankValues.S]: 50,
+      [rankValues.SS]: 100,
+    };
+    const comboScoreTable = [
+      [50, 100],
+      [40, 80],
+      [30, 50],
+      [20, 30],
+      [10, 10],
+      [0, 0],
+    ];
+    const baseDeckTotalPower = 101400;
+    const deckParameterScoreRate = 0.002;
+    const baseNoteScorePerfect = 50;
+    const paTaskMissionMap = new Map();
+
+    function chartIdFromScore(score) {
+      const musicId = toInt(score.musicId);
+      const difficulty = toInt(score.difficulty);
+      return musicId > 0 && difficulty >= 0 ? musicId * 10 + difficulty + 1 : 0;
+    }
+
+    function decodeMissionAchievement(achievements) {
+      const value = toInt(achievements);
+      return {
+        likes: value & 0xF,
+        achievement: (value >> 4) & 0xF,
+        combo: (value >> 8) & 0xF,
+        success: (value >> 12) & 0xF,
+      };
+    }
+
+    for (const mission of rawMissions || []) {
+      const chartId = toInt(mission.chart_id);
+      if (chartId > 0) {
+        paTaskMissionMap.set(chartId, decodeMissionAchievement(mission.achievements));
+      }
+    }
+
+    function missionForScore(score) {
+      return paTaskMissionMap.get(chartIdFromScore(score)) || {
+        likes: 0,
+        achievement: 0,
+        combo: 0,
+        success: 0,
+      };
+    }
+
+    function comboScore(comboNum) {
+      const combo = toInt(comboNum);
+      const row = comboScoreTable.find(([border]) => combo >= border);
+      return row ? row[1] : 0;
+    }
+
+    function rankScoreTarget(rank, totalNotes) {
+      const rate = rankScoreRates[rankValue(rank)];
+      const notes = toInt(totalNotes);
+      if (rate == null || notes <= 0) {
+        return 0;
+      }
+      const deckPerfectScore = Math.floor(baseDeckTotalPower * deckParameterScoreRate);
+      let maxScore = 0;
+      for (let combo = 1; combo <= notes; combo += 1) {
+        maxScore += baseNoteScorePerfect + comboScore(combo) + deckPerfectScore;
+      }
+      return Math.ceil((maxScore * rate) / 100);
+    }
+
+    function rankComboTarget(rank, totalNotes) {
+      const rate = rankComboRates[rankValue(rank)];
+      const notes = toInt(totalNotes);
+      if (rate == null || notes <= 0) {
+        return 0;
+      }
+      return Math.ceil((notes * rate) / 100);
+    }
+
+    function totalClearCountForMusic(musicId) {
+      return rawScores
+        .filter(score => toInt(score.musicId) === toInt(musicId))
+        .reduce((sum, score) => sum + toInt(score.clearCount), 0);
+    }
+
+    function taskCurrentValues(score) {
+      return {
+        achievement: toInt(score.achievementRate),
+        likes: toInt(score.score),
+        combo: toInt(score.combo),
+        success: totalClearCountForMusic(score.musicId),
+      };
+    }
+
+    function progressBetweenTargets(value, targets) {
+      if (!Array.isArray(targets) || targets.length === 0) {
+        return null;
+      }
+      const borders = targets
+        .map(target => Number(target.threshold))
+        .filter(threshold => Number.isFinite(threshold) && threshold > 0)
+        .sort((a, b) => a - b);
+      const current = Number(value);
+      if (!Number.isFinite(current) || borders.length === 0) {
+        return null;
+      }
+      if (current >= borders[borders.length - 1]) {
+        return borders.length;
+      }
+      let previous = 0;
+      for (let index = 0; index < borders.length; index += 1) {
+        const target = borders[index];
+        if (current < target) {
+          const span = target - previous;
+          const partial = span > 0 ? (current - previous) / span : 0;
+          return Math.max(0, index + Math.max(0, Math.min(1, partial)));
+        }
+        previous = target;
+      }
+      return borders.length;
+    }
+
+    function taskMetric(task) {
+      const total = Math.max(1, task.steps.length);
+      const progress = task.progress == null ? 0 : Math.max(0, Math.min(total, Number(task.progress) || 0));
+      const width = `${(progress / total) * 100}%`;
+      const achieved = Math.max(0, Math.min(total, toInt(task.achievement)));
+      return `
+        <div class="polaris-detail-task-item">
+          <div class="polaris-detail-task-head">
+            <div class="polaris-detail-task-label">${escapeHtml(task.label)}</div>
+            <div class="polaris-detail-task-value">${escapeHtml(task.value)}</div>
+          </div>
+          <div class="polaris-detail-task-bar">
+            <div class="polaris-detail-task-track ${task.className}" aria-label="${escapeHtml(task.label)} 진행도">
+              <span class="polaris-detail-task-fill" style="width: ${width}"></span>
+              ${task.steps.slice(0, -1).map((step, index) => `<span class="polaris-detail-task-marker${index + 1 <= achieved ? ' is-achieved' : ''}"></span>`).join('')}
+            </div>
+            ${task.steps.map((step, index) => `<span class="polaris-detail-task-point${index + 1 <= achieved ? ' is-achieved' : ''}" style="left: ${(index / total) * 100}%; width: ${(1 / total) * 100}%">${escapeHtml(step.label)}</span>`).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function paTaskRows(name, fallback) {
+      const rows = master.paTask && Array.isArray(master.paTask[name]) ? master.paTask[name] : fallback;
+      return rows
+        .slice()
+        .sort((a, b) => toInt(a.Achievement) - toInt(b.Achievement));
+    }
+
+    function achievementRateForRank(rank) {
+      if (typeof rank === 'number') {
+        const labels = ['D', 'C', 'B', 'A', 'AA', 'AAA', 'S', 'SS', 'SSS', 'SSS_PLUS', 'SSS_AP'];
+        return achievementRankRates[labels[rank]] || 0;
+      }
+      return achievementRankRates[rank] || 0;
+    }
+
+    function targetStep(label, threshold, achievementValue) {
+      return {
+        label,
+        threshold,
+        achievement: toInt(achievementValue),
+      };
+    }
+
+    function taskTargets(score, chart) {
+      const totalNotes = chart && toInt(chart.comboCount) > 1 ? toInt(chart.comboCount) : 0;
+      const scoreRows = paTaskRows('likesRank', [
+        { Achievement: 1, ScoreRank: 'B' },
+        { Achievement: 2, ScoreRank: 'A' },
+        { Achievement: 3, ScoreRank: 'S' },
+        { Achievement: 4, ScoreRank: 'SS' },
+      ]);
+      const achievementRows = paTaskRows('achievementRank', [
+        { Achievement: 1, AchievementRank: 'AA' },
+        { Achievement: 2, AchievementRank: 'AAA' },
+        { Achievement: 3, AchievementRank: 'S' },
+        { Achievement: 4, AchievementRank: 'SS' },
+      ]);
+      const comboRows = paTaskRows('comboRank', [
+        { Achievement: 1, ComboRank: 'B' },
+        { Achievement: 2, ComboRank: 'A' },
+        { Achievement: 3, ComboRank: 'S' },
+        { Achievement: 4, ComboRank: 'SS' },
+      ]);
+      const clearRows = paTaskRows('clearCount', [
+        { Achievement: 1, ClearCount: 1 },
+        { Achievement: 2, ClearCount: 3 },
+        { Achievement: 3, ClearCount: 6 },
+        { Achievement: 4, ClearCount: 10 },
+      ]);
+
+      return {
+        achievement: achievementRows.map(row => {
+          const threshold = achievementRateForRank(row.AchievementRank);
+          return targetStep(achievement(threshold), threshold, row.Achievement);
+        }),
+        likes: totalNotes > 0
+          ? scoreRows.map(row => {
+              const threshold = rankScoreTarget(row.ScoreRank, totalNotes);
+              return targetStep(numberFormat.format(threshold), threshold, row.Achievement);
+            })
+          : scoreRows.map(row => targetStep('-', null, row.Achievement)),
+        combo: totalNotes > 0
+          ? comboRows.map(row => {
+              const threshold = rankComboTarget(row.ComboRank, totalNotes);
+              return targetStep(numberFormat.format(threshold), threshold, row.Achievement);
+            })
+          : comboRows.map(row => targetStep('-', null, row.Achievement)),
+        success: clearRows.map(row => {
+          const threshold = toInt(row.ClearCount);
+          return targetStep(`${threshold}회`, threshold, row.Achievement);
+        }),
+      };
+    }
+
+    function renderPaTask(score) {
+      const section = document.getElementById('polaris-modal-task-section');
+      const target = document.getElementById('polaris-modal-task');
+      if (toInt(score.difficulty) === 4) {
+        section.style.display = 'none';
+        target.innerHTML = '';
+        return;
+      }
+      section.style.display = '';
+      const chart = chartMeta(score.musicId, score.difficulty);
+      const current = taskCurrentValues(score);
+      const mission = missionForScore(score);
+      const targets = taskTargets(score, chart);
+      const tasks = [
+        {
+          label: 'achievement',
+          value: achievement(current.achievement),
+          achievement: mission.achievement,
+          progress: progressBetweenTargets(current.achievement, targets.achievement),
+          steps: targets.achievement,
+          className: 'achievement',
+        },
+        {
+          label: 'Likes',
+          value: numberFormat.format(current.likes),
+          achievement: mission.likes,
+          progress: progressBetweenTargets(current.likes, targets.likes),
+          steps: targets.likes,
+          className: 'likes',
+        },
+        {
+          label: 'combo',
+          value: numberFormat.format(current.combo),
+          achievement: mission.combo,
+          progress: progressBetweenTargets(current.combo, targets.combo),
+          steps: targets.combo,
+          className: 'combo',
+        },
+        {
+          label: 'success',
+          value: `${numberFormat.format(current.success)}회`,
+          achievement: mission.success,
+          progress: progressBetweenTargets(current.success, targets.success),
+          steps: targets.success,
+          className: 'success',
+        },
+      ];
+      target.innerHTML = `
+        <div class="polaris-detail-task-grid">
+          ${tasks.map(taskMetric).join('')}
+        </div>
+      `;
+    }
+
+    function renderModalDifficultyTabs(score) {
+      const target = document.getElementById('polaris-modal-difficulties');
+      const row = rowByMusicId.get(toInt(score.musicId));
+      if (!row) {
+        target.innerHTML = '';
+        return;
+      }
+      target.innerHTML = difficulties.map(difficulty => {
+        const tabScore = row.charts.get(difficulty.id);
+        const active = difficulty.id === toInt(score.difficulty);
+        const key = scoreKey(row.musicId, difficulty.id);
+        return `
+          <button class="polaris-difficulty-tab${active ? ' is-active' : ''}" type="button" role="tab" aria-selected="${active ? 'true' : 'false'}" ${tabScore ? `data-score-key="${key}"` : 'disabled'}>
+            ${escapeHtml(difficulty.label)}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function openModal(key) {
+      const score = scoreStore.get(key);
+      if (!score) {
+        return;
+      }
+      const music = musicMeta(score.musicId);
+      const chart = chartMeta(score.musicId, score.difficulty);
+      const status = statusInfo(score.clearStatus);
+      setText('polaris-modal-title', score.displayTitle || musicTitle(score));
+      document.getElementById('polaris-modal-header-jacket').innerHTML = jacketImage(score.musicId, score.displayTitle || musicTitle(score)) || '';
+      renderModalDifficultyTabs(score);
+      setText('polaris-modal-level', chart ? `${chart.level}` : '-');
+      setText('polaris-modal-effecter', chart && chart.effecter ? chart.effecter : '-');
+      setText('polaris-modal-composer', music && music.composer ? music.composer : '-');
+      const modalStatus = document.getElementById('polaris-modal-status');
+      modalStatus.textContent = status[0];
+      modalStatus.className = `polaris-detail-status ${status[1]}`;
+      setText('polaris-modal-achievement', achievement(score.achievementRate));
+      setText('polaris-modal-score', numberFormat.format(toInt(score.score)));
+      setText('polaris-modal-combo', numberFormat.format(toInt(score.combo)));
+      setText('polaris-modal-play-count', numberFormat.format(toInt(score.playCount)));
+      setText('polaris-modal-success-count', numberFormat.format(toInt(score.clearCount)));
+      setText('polaris-modal-fc-count', numberFormat.format(toInt(score.fullComboCount)));
+      setText('polaris-modal-ap-count', numberFormat.format(toInt(score.perfectClearCount)));
+      setText('polaris-modal-rank', `Likes ${rankLabel(score.scoreRank)} / Combo ${rankLabel(score.comboRank)}`);
+      renderPaTask(score);
+      modal.classList.add('is-active');
+    }
+
+    function closeModal() {
+      modal.classList.remove('is-active');
+    }
+
+    const allRows = buildRows(rawScores);
+    const rowByMusicId = new Map(allRows.map(row => [row.musicId, row]));
+    renderSummary(allRows);
+    renderTable();
+    function resetPageAndRender() {
+      pageSizeInput.value = pageSize();
+      currentPage = 1;
+      renderTable();
+    }
+    search.addEventListener('input', resetPageAndRender);
+    difficultyFilter.addEventListener('change', resetPageAndRender);
+    statusFilter.addEventListener('change', resetPageAndRender);
+    sortSelect.addEventListener('change', resetPageAndRender);
+    pageSizeInput.addEventListener('change', resetPageAndRender);
+    prevPageButton.addEventListener('click', () => {
+      currentPage = Math.max(1, currentPage - 1);
+      renderTable();
+    });
+    nextPageButton.addEventListener('click', () => {
+      currentPage += 1;
+      renderTable();
+    });
+    body.addEventListener('click', event => {
+      const button = event.target.closest('[data-score-key]');
+      if (button) {
+        openModal(button.dataset.scoreKey);
+      }
+    });
+    document.getElementById('polaris-modal-difficulties').addEventListener('click', event => {
+      const button = event.target.closest('[data-score-key]');
+      if (button) {
+        openModal(button.dataset.scoreKey);
+      }
+    });
+    document.getElementById('polaris-modal-close').addEventListener('click', closeModal);
+    document.getElementById('polaris-modal-ok').addEventListener('click', closeModal);
+    modal.querySelector('.modal-background').addEventListener('click', closeModal);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && modal.classList.contains('is-active')) {
+        closeModal();
+      }
+    });
+  })();
