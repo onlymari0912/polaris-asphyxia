@@ -1,9 +1,7 @@
-import {readFileSync} from 'fs';
-import {join} from 'path';
+import {readJsonResource, readResource} from '../common/resource';
 import {toInt} from '../common/utils';
-import {CharacterCard, GachaCategory, GachaEntry, GachaOptions} from './types';
+import {CharacterCard, GachaEntry, GachaOptions} from './types';
 
-const RESOURCES_DIR = join(__dirname, '..', '..', 'resources');
 const PAYMENT_TYPE_FALLBACK_TO_CLIENT = 0;
 const PAYMENT_TYPE_BY_TOKEN: Record<string, number> = {
     credit: 2,
@@ -17,14 +15,6 @@ export const GACHA_RESULT_RARITY_PARAMS: Record<string, string> = {
     SR: '3',
     SSR: '4',
 };
-
-function readJson<T>(name: string, fallback: T): T{
-    try{
-        return JSON.parse(readFileSync(join(RESOURCES_DIR, name), 'utf8')) as T;
-    }catch{
-        return fallback;
-    }
-}
 
 function parseCsvLine(line: string){
     const values: string[] = [];
@@ -54,7 +44,7 @@ function parseCsvLine(line: string){
 
 function readCards(){
     try{
-        const lines = readFileSync(join(RESOURCES_DIR, 'cards.csv'), 'utf8')
+        const lines = readResource('cards.csv')
             .replace(/^\uFEFF/, '')
             .split(/\r?\n/)
             .filter(Boolean);
@@ -76,11 +66,11 @@ function readCards(){
 }
 
 function loadGachaEntries(){
-    const contenter = readJson<GachaEntry[]>('gacha_contenter.json', []).map(entry => ({
+    const contenter = readJsonResource<GachaEntry[]>('gacha_contenter.json', []).map(entry => ({
         ...entry,
         category: 'Contenter',
     }));
-    const snapshot = readJson<GachaEntry[]>('gacha_snapshot.json', []).map(entry => ({
+    const snapshot = readJsonResource<GachaEntry[]>('gacha_snapshot.json', []).map(entry => ({
         ...entry,
         category: 'Snapshot',
     }));
@@ -93,7 +83,7 @@ const CHARACTER_CARD_BY_ID = new Map(CHARACTER_CARDS.map(card => [card.card_id, 
 export const GACHA_ENTRIES = loadGachaEntries();
 export const GACHA_BY_ID = new Map(GACHA_ENTRIES.map(entry => [toInt(entry.id), entry]));
 export const DEFAULT_GACHA_ID = GACHA_ENTRIES.length > 0 ? toInt(GACHA_ENTRIES[0].id) : 0;
-export const GACHA_OPTIONS = readJson<GachaOptions>('gacha_options.json', {});
+export const GACHA_OPTIONS = readJsonResource<GachaOptions>('gacha_options.json', {});
 
 export function resolveGachaId(gachaId: number){
     return GACHA_BY_ID.has(gachaId) ? gachaId : DEFAULT_GACHA_ID;

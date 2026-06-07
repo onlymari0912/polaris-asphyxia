@@ -1,7 +1,4 @@
-import {readFileSync} from 'fs';
-import {join} from 'path';
-
-const RESOURCES_DIR = join(__dirname, '..', '..', '..', 'resources');
+import {readJsonResource, readResource} from '../resource';
 
 export type MusicCatalogEntry = {
     id: number;
@@ -9,14 +6,6 @@ export type MusicCatalogEntry = {
     composer: string;
     noteGrades: number[];
 };
-
-function readJson<T>(name: string, fallback: T): T{
-    try{
-        return JSON.parse(readFileSync(join(RESOURCES_DIR, name), 'utf8')) as T;
-    }catch{
-        return fallback;
-    }
-}
 
 function parseCsvLine(line: string){
     const values: string[] = [];
@@ -94,7 +83,7 @@ function normalizeMusicCatalog(data: unknown): MusicCatalogEntry[]{
 
 function readCharacterCardItemIds(){
     try{
-        const lines = readFileSync(join(RESOURCES_DIR, 'cards.csv'), 'utf8')
+        const lines = readResource('cards.csv')
             .replace(/^\uFEFF/, '')
             .split(/\r?\n/)
             .filter(Boolean);
@@ -113,8 +102,8 @@ function readCharacterCardItemIds(){
     }
 }
 
-export const MUSIC_CATALOG = normalizeMusicCatalog(readJson<unknown>('musics.json', {}));
+export const MUSIC_CATALOG = normalizeMusicCatalog(readJsonResource<unknown>('musics.json', {}));
 export const MUSIC_CHARTS = MUSIC_CATALOG.flatMap(music =>
-    music.noteGrades.map(noteGrade => [music.id, noteGrade] as [number, number])
+    music.noteGrades.map(noteGrade => [music.id, noteGrade] as [number, number]),
 );
 const CHARACTER_CARD_ITEM_IDS = new Set(readCharacterCardItemIds());
