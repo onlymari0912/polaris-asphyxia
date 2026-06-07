@@ -3,7 +3,7 @@ import {join} from 'path';
 import {toInt} from '../common/utils';
 import {CharacterCard, GachaCategory, GachaEntry, GachaOptions} from './types';
 
-const RESOURCES_DIR = join(__dirname, '..', 'resources');
+const RESOURCES_DIR = join(__dirname, '..', '..', 'resources');
 const PAYMENT_TYPE_FALLBACK_TO_CLIENT = 0;
 const PAYMENT_TYPE_BY_TOKEN: Record<string, number> = {
     credit: 2,

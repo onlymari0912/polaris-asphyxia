@@ -8,7 +8,7 @@ import {
   usrSaveMusicScore,
   usrSaveTemp,
   usrSignUp,
-} from './usr/routes';
+} from './src/usr/routes';
 import {
   pcbFinishMatchingRoom,
   pcbSave,
@@ -17,14 +17,14 @@ import {
   pcbSyncMatchingMusic,
   pcbSyncMatchingProgress,
   pcbSyncMatchingRoom,
-} from './pcb/routes';
+} from './src/pcb/routes';
 import {
   gachaBeginGacha,
   gachaDrawGacha,
   gachaEndGacha,
   gachaGetGachaInfo,
-} from './gacha/routes';
-import { mstGetCommon } from './mst/routes';
+} from './src/gacha/routes';
+import { mstGetCommon } from './src/mst/routes';
 
 export function register() {
   R.GameCode('XIF');

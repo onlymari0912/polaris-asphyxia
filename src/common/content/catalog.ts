@@ -1,7 +1,7 @@
 import {readFileSync} from 'fs';
 import {join} from 'path';
 
-const RESOURCES_DIR = join(__dirname, '..', '..', 'resources');
+const RESOURCES_DIR = join(__dirname, '..', '..', '..', 'resources');
 
 export type MusicCatalogEntry = {
     id: number;
